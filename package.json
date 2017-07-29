@@ -1,0 +1,57 @@
+{
+  "name": "graphql-leveler",
+  "version": "1.0.0",
+  "description": "Allows GraphQL objects to be queried with mutated shapes.",
+  "main": "lib.js",
+  "scripts": {
+    "test": "jest --coverage",
+    "lint": "eslint --ignore-path .gitignore .",
+    "precommit": "yarn lint",
+    "prepush": "yarn test",
+    "commitmsg": "validate-commit-msg"
+  },
+  "author": "Peter Sieg <chasingmaxwell@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^4.3.0",
+    "eslint-config-airbnb-base": "^11.3.1",
+    "eslint-plugin-import": "^2.7.0",
+    "graphql": "^0.10.5",
+    "husky": "^0.14.3",
+    "jest": "^20.0.4",
+    "validate-commit-message": "^3.0.1"
+  },
+  "dependencies": {
+    "graphql-anyscalar": "^1.1.0",
+    "lodash": "^4.17.4"
+  },
+  "jest": {
+    "coverageDirectory": "__coverage__",
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    },
+    "testMatch": [
+      "<rootDir>/__tests__/**/*.js"
+    ],
+    "testEnvironment": "node"
+  },
+  "peerDependencies": {
+    "graphql": "^0.10.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chasingmaxwell/graphql-leveler.git"
+  },
+  "keywords": [
+    "GraphQL"
+  ],
+  "bugs": {
+    "url": "https://github.com/chasingmaxwell/graphql-leveler/issues"
+  },
+  "homepage": "https://github.com/chasingmaxwell/graphql-leveler#readme"
+}
