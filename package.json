@@ -1,6 +1,6 @@
 {
   "name": "graphql-leveler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Allows GraphQL objects to be queried with mutated shapes.",
   "main": "lib.js",
   "scripts": {
