@@ -2,6 +2,10 @@
 
 graphql-leveler makes it possible for GraphQL servers to allow client queries to mutate the shape of response objects. It does this by exposing a new type called `LevelerObjectType` which is a drop-in replacement for `GraphQLObjectType` with one important addition: It provides a `_get` field which allows clients to query the object by path. Using `_get` in combination with an alias, a client can access deeply nested properties at the top level of an object with whatever property name the client desires.
 
+## Installation
+
+`yarn add graphql-leveler`
+
 ## Client Usage
 
 ### Basic Queries
