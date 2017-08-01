@@ -131,18 +131,20 @@ const {
 } = require('graphql-leveler');
 
 // This would have been GraphQLObjectType before.
-const person = new LevelerObjectType({
+const PersonType = new LevelerObjectType({
   name: 'person',
   fields: () => ({
-    // No need to switch to LevelerObjectType since it's only one level deep.
-    attributes: new GraphQLObjectType({
-      name: 'personAttributes',
-      fields: () => ({
-        name: { type: GraphQLString },
-        height: { type: GraphQLInt },
-        eye_color: { type: GraphQLString },
+    attributes: {
+      // No need to use LevelerObjectType since it's only one level deep.
+      type: new GraphQLObjectType({
+        name: 'personAttributes',
+        fields: () => ({
+          name: { type: GraphQLString },
+          height: { type: GraphQLInt },
+          eye_color: { type: GraphQLString },
+        }),
       }),
-    }),
+    },
   }),
 });
 ```
