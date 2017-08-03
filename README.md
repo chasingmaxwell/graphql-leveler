@@ -1,14 +1,19 @@
 # graphql-leveler
 
-graphql-leveler makes it possible for GraphQL servers to allow client queries to mutate the shape of response objects. It does this by exposing a new type called `LevelerObjectType` which is a drop-in replacement for `GraphQLObjectType` with one important addition: It provides a `_get` field which allows clients to query the object by path. Using `_get` in combination with an alias, a client can access deeply nested properties at the top level of an object with whatever property name the client desires.
+graphql-leveler makes it possible for GraphQL servers to allow client queries to control the shape of response objects. It does this by exposing a new type called `LevelerObjectType` which is a drop-in replacement for `GraphQLObjectType` with the addition of two convenient fields: `_get` and `_root`.
+
 
 ## Installation
 
-`yarn add graphql-leveler`
+`yarn add graphql-leveler` or `npm install --save graphql-leveler`
 
 ## Client Usage
 
-### Basic Queries
+### \_get
+
+`_get` allows clients to query the object by path, much like lodash's `get()` method. In fact, it uses `_.get()` under the hood! Using `_get` in combination with an alias, a client can access deeply nested properties at the top level of an object with whatever property name the client desires.
+
+#### Basic Queries
 
 If the object's resolver on the server returns an object which looks like this:
 
@@ -24,7 +29,7 @@ If the object's resolver on the server returns an object which looks like this:
 }
 ```
 
-Normally the client would have to query for `property` like this:
+— normally the client would have to query for `property` like this:
 
 ```graphql
 {
@@ -50,7 +55,7 @@ Normally the client would have to query for `property` like this:
 
 — regardless of whether that is the shape desired by the client.
 
-However, with graphql-leveler, now the client can query for the same property like this:
+However, with `_get`, now the client can query for the same property like this:
 
 ```graphql
 {
@@ -68,7 +73,7 @@ However, with graphql-leveler, now the client can query for the same property li
 }
 ```
 
-### Nested LevelerObjectType's
+#### Nested LevelerObjectType's
 
 You aren't limited to completely flat shapes either! Since `LevelerObjectType` is a drop-in replacement for `GraphQLObjectType`, you can make any `GraphQLObjectType` a `LevelerObjectType`, allowing clients extreme flexibility over the response shape. For example, let's say we've changed every object type in the above example to `LevelerObjectType`. Clients can now also get to the same property with the following query:
 
@@ -92,11 +97,11 @@ You aren't limited to completely flat shapes either! Since `LevelerObjectType` i
 }
 ```
 
-### Optional arguments
+#### Optional arguments
 
 In addition to the required `path` argument, the `_get` field provides two optional arguments:
 
-#### defaultValue
+##### defaultValue
 
 Define the default value returned if there is no property found at the given path.
 
@@ -106,7 +111,7 @@ Define the default value returned if there is no property found at the given pat
 }
 ```
 
-#### allowUndefined
+##### allowUndefined
 
 The default behavior is to report an error if the property at the given path is missing and no default value is provided. This argument allows undefined values so that the result will be `null` in the response for that field.
 
@@ -115,6 +120,51 @@ The default behavior is to report an error if the property at the given path is 
   sometimesMissing: _get(path: "some.occasionally.existing.property", allowUndefined: true)
 }
 ```
+
+### \_root
+
+`_root` allows clients access the the root of the closest `LevelerObjectType` in places where it would usually be out of scope. This can be used in combination with aliases to construct arbitrary objects in the response object. For example:
+
+If the object's resolver on the server returns this:
+
+```json
+{
+  "attributes": {
+    "episodeNumber": 42,
+    "seasonNumber": 1
+  }
+}
+```
+
+— then a client can query it like this:
+
+```graphql
+{
+  episode: attributes {
+    episodeNumber
+    season: _root {
+      seasonNumber
+    }
+  }
+}
+```
+
+— producing a shape like this:
+
+```json
+{
+  "data": {
+    "episode": {
+      "episodeNumber": 42,
+      "season": {
+        "seasonNumber": 1
+      }
+    }
+  }
+}
+```
+
+In the above example, the `seasonNumber` field is nested inside `episode.season` which is an arbitrary object. Without `_root` that field would need to be queried and returned at the root of the `episode` object.
 
 ## Server Usage
 
@@ -135,8 +185,8 @@ const PersonType = new LevelerObjectType({
   name: 'person',
   fields: () => ({
     attributes: {
-      // No need to use LevelerObjectType since it's only one level deep.
-      type: new GraphQLObjectType({
+      // This would have been GraphQLObjectType before.
+      type: new LevelerObjectType({
         name: 'personAttributes',
         fields: () => ({
           name: { type: GraphQLString },
@@ -149,17 +199,13 @@ const PersonType = new LevelerObjectType({
 });
 ```
 
-## How does it work?
-
-The resolver for the `_get` field on `LevelerObjectType` simply looks for the property at the given path on the raw object and returns it's value much like lodash's `get()` method. In fact, it uses `_.get()` under the hood!
-
 ## What are the limitations?
 
-### Only scalar leaf values can be retrieved.
+### Only scalar leaf values can be retrieved with \_get.
 
 As of right now, because of the complexity of allowing multiple types in the response for a single field, no complex values like objects or arrays can be returned by the `_get` field resolver.
 
-### Nested field resolvers are not invoked.
+### Nested field resolvers are not invoked with \_get.
 
 graphql-leveler does not invoke field resolvers within the object currently being queried, and so it is limited to properties which exist in the raw object returned by the resolver.
 

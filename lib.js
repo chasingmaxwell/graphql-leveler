@@ -10,8 +10,8 @@ const { AnyScalar } = require('graphql-anyscalar');
 class LevelerObjectType extends GraphQLObjectType {
   constructor(def) {
     const levelerDef = Object.assign({}, def);
-    const fields = {
-      _get: {
+    const fields = () => {
+      const _get = {
         type: AnyScalar,
         args: {
           path: { type: new GraphQLNonNull(GraphQLString) },
@@ -25,12 +25,18 @@ class LevelerObjectType extends GraphQLObjectType {
           }
           return val;
         },
-      },
+      };
+      const _root = {
+        type: this,
+        resolve: obj => obj,
+      };
+
+      return { _get, _root };
     };
 
     levelerDef.fields = (defFields => () => {
       const resolvedFields = typeof defFields === 'function' ? defFields() : defFields;
-      return Object.assign(fields, resolvedFields);
+      return Object.assign({}, fields(), resolvedFields);
     })(levelerDef.fields);
 
     super(levelerDef);
